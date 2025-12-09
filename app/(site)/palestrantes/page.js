@@ -1,27 +1,32 @@
+// congresso/app/(site)/palestrantes/page.js
 import CardPalestrante from "../components/CardPalestrante";
-import palestrantesMock from "../../../scripts-admin/palestrantes-mock.json";
+import { db } from "../../../scripts-admin/firebase-admin";
 
-// ISR: revalidate a cada 300 segundos (5 minutos)
-export const revalidate = 300;
+// ISR: revalidate duas vezes ao dia (~12 horas)
+export const revalidate = 43200; // 12h * 60min * 60s
 
-/**
- * Busca os palestrantes usando mock JSON
- */
 async function fetchPalestrantes() {
-  return palestrantesMock;
+  try {
+    const snapshot = await db.collection("palestrantes").get();
+    const palestrantes = snapshot.docs.map(doc => doc.data());
+    return palestrantes;
+  } catch (error) {
+    console.error("Erro ao buscar palestrantes:", error);
+    return [];
+  }
 }
 
 export default async function PalestrantesPage() {
   const palestrantes = await fetchPalestrantes();
 
   return (
-    <div className="p-6 min-h-screen bg-[var(--background)] flex flex-col items-center">
+    <div className="p-6 min-h-screen bg-[var(--background)]">
       <h1 className="text-3xl font-bold text-white mb-6">Palestrantes</h1>
 
       {palestrantes.length === 0 ? (
         <p className="text-white">Nenhum palestrante encontrado.</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-3 justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 justify-center gap-x-4 gap-y-6">
           {palestrantes.map((p) => (
             <CardPalestrante key={p.id} palestrante={p} />
           ))}

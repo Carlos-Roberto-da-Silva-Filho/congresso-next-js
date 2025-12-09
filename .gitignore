@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Firebase Admin Key (NUNCA subir!)
+admin-key.json
+*.serviceAccountKey.json
+
+# Firebase Admin Scripts
+scripts-admin/

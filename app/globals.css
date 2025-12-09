@@ -1,26 +1,67 @@
 @import "tailwindcss";
 
+/* ================================
+   VARIÁVEIS DE TEMA
+================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --background: #02152c;
+  --foreground: #ffffff;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: #031121;
+  --color-primary-light: #052545;
+  --color-primary-lighter: #0e477c;
+  --color-primary-dark: #01101f;
+  --background-soft: #f5f9ff;
+
+  --text-dashboard: #ffffff;
+  --text-dashboard-muted: #a0aec0;
+  --text-success: #22c55e;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #051023;
+    --foreground: #f6f9fe;
+
+    --color-primary: #020910;
+    --color-primary-light: #031121;
+    --color-primary-lighter: #0e477c;
+    --color-primary-dark: #f6f9fe;
+    --background-soft: #0d1c35;
+
+    --text-dashboard: #f6f9fe;
+    --text-dashboard-muted: #718096;
+    --text-success: #22c55e;
   }
 }
 
+/* ================================
+   ESTILOS GERAIS
+================================ */
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--foreground);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid var(--color-primary);
+  padding: 0.5rem;
+}
+
+tr:nth-child(even) {
+  background-color: #031121; /* azul mais escuro para contraste */
 }

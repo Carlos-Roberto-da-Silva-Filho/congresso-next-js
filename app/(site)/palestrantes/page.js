@@ -8,7 +8,10 @@ export const revalidate = 43200; // 12h * 60min * 60s
 async function fetchPalestrantes() {
   try {
     const snapshot = await db.collection("palestrantes").get();
-    const palestrantes = snapshot.docs.map(doc => doc.data());
+    const palestrantes = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ... doc.data(),
+    }));
     return palestrantes;
   } catch (error) {
     console.error("Erro ao buscar palestrantes:", error);

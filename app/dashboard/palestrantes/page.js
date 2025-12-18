@@ -29,51 +29,59 @@ export default function PalestrantesPage() {
   }, []);
 
   return (
-    <div className="p-6 bg-[var(--background)] min-h-screen text-[var(--text-dashboard)]">
+    <div className="p-6 min-h-screen bg-[var(--background)] text-[var(--text-dashboard)]">
       {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
-        <h1 className="text-2xl font-bold">Palestrantes</h1>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-3">
+        <h1 className="text-2xl font-semibold text-white">Palestrantes</h1>
+
         <Link
           href="/dashboard/palestrantes/create"
-          className="px-4 py-2 rounded bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white transition"
+          className="px-4 py-2 rounded-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white font-medium transition"
         >
           + Cadastrar
         </Link>
       </div>
 
-      {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto rounded-lg border-2 border-white/20">
-        <table className="min-w-full rounded-lg border-collapse">
+      {/* Tabela Desktop */}
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-white/20">
+        <table className="min-w-full border-collapse">
           <thead className="bg-[var(--color-primary-light)]">
-            <tr className="border-2 border-white/20">
-              <th className="p-3 text-left text-xl font-bold text-white">Nome</th>
-              <th className="p-3 text-left text-xl font-bold text-white">Especialidade</th>
-              <th className="p-3 text-center text-xl font-bold text-white">Ações</th>
+            <tr>
+              <th className="p-3 text-left text-sm font-semibold text-white">
+                Nome
+              </th>
+              <th className="p-3 text-left text-sm font-semibold text-white">
+                Especialidade
+              </th>
+              <th className="p-3 text-center text-sm font-semibold text-white">
+                Ações
+              </th>
             </tr>
           </thead>
+
           <tbody>
             {palestrantes.map((p, idx) => (
               <tr
                 key={p.id}
-                className={`border-2 border-white/20 ${
+                className={`${
                   idx % 2 === 0
-                    ? "bg-[rgba(8,38,73,0.7)]"
-                    : "bg-[rgba(6,76,142,0.7)]"
-                }`}
+                    ? "bg-[rgba(8,38,73,0.6)]"
+                    : "bg-[rgba(6,76,142,0.6)]"
+                } border-t border-white/10 hover:bg-white/5 transition`}
               >
-                <td className="p-2 border-2 border-white/20">{p.nome}</td>
-                <td className="p-2 border-2 border-white/20">{p.especialidade}</td>
-                <td className="p-2 border-2 border-white/20 flex justify-center gap-2">
+                <td className="p-3">{p.nome}</td>
+                <td className="p-3">{p.especialidade}</td>
+                <td className="p-3 flex justify-center gap-3">
                   <Link
                     href={`/dashboard/palestrantes/${p.id}`}
-                    className="material-symbols-outlined text-white hover:text-yellow-400 cursor-pointer"
+                    className="material-symbols-outlined text-white/80 hover:text-yellow-400 transition"
                     title="Editar"
                   >
                     edit
                   </Link>
                   <button
                     onClick={() => handleDelete(p.id)}
-                    className="material-symbols-outlined text-white hover:text-red-400 cursor-pointer"
+                    className="material-symbols-outlined text-white/80 hover:text-red-400 transition"
                     title="Deletar"
                   >
                     delete
@@ -85,27 +93,25 @@ export default function PalestrantesPage() {
         </table>
       </div>
 
-      {/* Mobile Cards */}
+      {/* Cards Mobile */}
       <div className="md:hidden flex flex-col gap-4 mt-4">
         {palestrantes.map((p) => (
           <div
             key={p.id}
-            className="bg-[rgba(255,255,255,0.05)] shadow rounded p-4 border border-white/20 flex flex-col gap-2"
+            className="bg-white/5 border border-white/20 rounded-xl p-4 flex flex-col gap-2 shadow-sm"
           >
             <div className="flex justify-between items-center">
-              <span className="font-bold">{p.nome}</span>
+              <span className="font-semibold">{p.nome}</span>
               <div className="flex gap-2">
                 <Link
                   href={`/dashboard/palestrantes/${p.id}`}
-                  className="material-symbols-outlined text-white hover:text-yellow-400 cursor-pointer"
-                  title="Editar"
+                  className="material-symbols-outlined text-white/80 hover:text-yellow-400 transition"
                 >
                   edit
                 </Link>
                 <button
                   onClick={() => handleDelete(p.id)}
-                  className="material-symbols-outlined text-white hover:text-red-400 cursor-pointer"
-                  title="Deletar"
+                  className="material-symbols-outlined text-white/80 hover:text-red-400 transition"
                 >
                   delete
                 </button>

@@ -1,13 +1,24 @@
 import PalestraForm from "../create";
+import { db } from "@/lib/firebaseAdmin";
 
-async function fetchPalestra(id) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/palestras`);
-  const data = await res.json();
-  return data.find((p) => p.id === id);
+async function fetchPalestraById(id) {
+  if (!id) return null;
+
+  const doc = await db.collection("palestras").doc(id).get();
+
+  if (!doc.exists) return null;
+
+  return {
+    id: doc.id,
+    ...doc.data(),
+  };
 }
 
 export default async function EditPalestra({ params }) {
-  const data = await fetchPalestra(params.id);
+  // 🔥 AQUI ESTÁ A CORREÇÃO REAL
+  const { id } = await params;
+
+  const data = await fetchPalestraById(id);
 
   return <PalestraForm existingData={data} />;
 }

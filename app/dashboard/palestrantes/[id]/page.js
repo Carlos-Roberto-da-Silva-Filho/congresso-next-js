@@ -1,13 +1,19 @@
 import PalestranteForm from "../create";
+import { db } from "@/lib/firebaseAdmin";
 
-async function fetchPalestrante(id) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/palestrantes`);
-  const data = await res.json();
-  return data.find((p) => p.id === id);
+async function fetchPalestranteById(id) {
+  if (!id) return null;
+
+  const doc = await db.collection("palestrantes").doc(id).get();
+
+  if (!doc.exists) return null;
+
+  return { id: doc.id, ...doc.data() };
 }
 
 export default async function EditPalestrante({ params }) {
-  const data = await fetchPalestrante(params.id);
+  const { id } = await params; // ✅ ISSO É O QUE FALTAVA
+  const data = await fetchPalestranteById(id);
 
   return <PalestranteForm existingData={data} />;
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function PalestraForm({ existingData }) {
   const router = useRouter();
+
   const [form, setForm] = useState({
     titulo: "",
     descricao: "",
@@ -21,9 +22,18 @@ export default function PalestraForm({ existingData }) {
       const data = await res.json();
       setPalestrantes(data);
     }
+
     fetchPalestrantes();
 
-    if (existingData) setForm(existingData);
+    if (existingData) {
+      setForm({
+        titulo: existingData.titulo || "",
+        descricao: existingData.descricao || "",
+        dataHora: existingData.dataHora || "",
+        local: existingData.local || "",
+        palestranteId: existingData.palestranteId || "",
+      });
+    }
   }, [existingData]);
 
   function handleChange(e) {
@@ -35,21 +45,14 @@ export default function PalestraForm({ existingData }) {
     e.preventDefault();
 
     let method = "POST";
-    let url = "/api/palestras";
     let body = { ...form };
 
     if (existingData?.id) {
       body.id = existingData.id;
-      const allFieldsPresent =
-        form.titulo &&
-        form.descricao &&
-        form.dataHora &&
-        form.local &&
-        form.palestranteId;
-      method = allFieldsPresent ? "PUT" : "PATCH";
+      method = "PUT";
     }
 
-    await fetch(url, {
+    await fetch("/api/palestras", {
       method,
       body: JSON.stringify(body),
       headers: { "Content-Type": "application/json" },
@@ -58,68 +61,92 @@ export default function PalestraForm({ existingData }) {
     router.push("/dashboard/palestras");
   }
 
+  const inputClass =
+    "w-full rounded-lg px-3 py-2 bg-black/20 text-white " +
+    "border border-white/60 placeholder-white/60 " +
+    "focus:outline-none focus:ring-2 focus:ring-white/40 " +
+    "hover:border-white transition";
+
   return (
-    <div className="p-6 max-w-lg mx-auto bg-dashboard-bg min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-center text-white">
+    <div className="p-6 min-h-screen flex flex-col items-center bg-[var(--background)]">
+      <h1 className="text-2xl font-bold mb-6 text-white">
         {existingData ? "Editar" : "Cadastrar"} Palestra
       </h1>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          type="text"
-          name="titulo"
-          placeholder="Título"
-          value={form.titulo}
-          onChange={handleChange}
-          required
-          className="input bg-white/10 text-white border border-white/30 placeholder-white/50 focus:ring-2 focus:ring-white/50"
-        />
-
-        <textarea
-          name="descricao"
-          placeholder="Descrição"
-          value={form.descricao}
-          onChange={handleChange}
-          className="input h-32 resize-none bg-white/10 text-white border border-white/30 placeholder-white/50 focus:ring-2 focus:ring-white/50"
-        />
-
-        <div className="flex flex-col sm:flex-row sm:gap-4">
-          <input
-            type="datetime-local"
-            name="dataHora"
-            value={form.dataHora}
-            onChange={handleChange}
-            required
-            className="input flex-1 bg-white/10 text-white border border-white/30 placeholder-white/50 focus:ring-2 focus:ring-white/50"
-          />
+      <form className="w-full max-w-lg flex flex-col gap-4" onSubmit={handleSubmit}>
+        {/* Título */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-white/80">Título</label>
           <input
             type="text"
-            name="local"
-            placeholder="Local"
-            value={form.local}
+            name="titulo"
+            value={form.titulo}
             onChange={handleChange}
-            className="input flex-1 mt-2 sm:mt-0 bg-white/10 text-white border border-white/30 placeholder-white/50 focus:ring-2 focus:ring-white/50"
+            required
+            className={inputClass}
           />
         </div>
 
-        <select
-          name="palestranteId"
-          value={form.palestranteId}
-          onChange={handleChange}
-          required
-          className="input bg-white/10 text-white border border-white/30 placeholder-white/50 focus:ring-2 focus:ring-white/50"
-        >
-          <option value="">Selecione o palestrante</option>
-          {palestrantes.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nome}
-            </option>
-          ))}
-        </select>
+        {/* Descrição */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-white/80">Descrição</label>
+          <textarea
+            name="descricao"
+            value={form.descricao}
+            onChange={handleChange}
+            className={`${inputClass} h-28 resize-none`}
+          />
+        </div>
 
+        {/* Data e Local */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-1 flex-1">
+            <label className="text-sm text-white/80">Data e hora</label>
+            <input
+              type="datetime-local"
+              name="dataHora"
+              value={form.dataHora}
+              onChange={handleChange}
+              required
+              className={inputClass}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1 flex-1">
+            <label className="text-sm text-white/80">Local</label>
+            <input
+              type="text"
+              name="local"
+              value={form.local}
+              onChange={handleChange}
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        {/* Palestrante */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-white/80">Palestrante</label>
+          <select
+            name="palestranteId"
+            value={form.palestranteId}
+            onChange={handleChange}
+            required
+            className={inputClass}
+          >
+            <option value="">Selecione o palestrante</option>
+            {palestrantes.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Botão */}
         <button
           type="submit"
-          className="px-4 py-2 mt-2 bg-color-primary text-white rounded-lg hover:bg-color-primary-light transition"
+          className="mt-4 px-4 py-2 rounded-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white font-medium transition"
         >
           {existingData ? "Atualizar" : "Cadastrar"}
         </button>

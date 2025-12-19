@@ -5,116 +5,82 @@ import Link from "next/link";
 
 export default function HospedagensPage() {
   const [hospedagens, setHospedagens] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   async function fetchHospedagens() {
+    setLoading(true);
     const res = await fetch("/api/hospedagens");
     const data = await res.json();
     setHospedagens(data);
+    setLoading(false);
   }
 
   async function handleDelete(id) {
-    if (!confirm("Deseja realmente excluir esta hospedagem?")) return;
-
+    if (!confirm("Deseja excluir esta hospedagem?")) return;
     await fetch("/api/hospedagens", {
       method: "DELETE",
       body: JSON.stringify({ id }),
       headers: { "Content-Type": "application/json" },
     });
-
     fetchHospedagens();
   }
 
-  useEffect(() => {
-    fetchHospedagens();
-  }, []);
+  useEffect(() => { fetchHospedagens(); }, []);
+
+  if (loading) return <div className="p-8 text-white">Carregando opções de estadia...</div>;
 
   return (
-    <div className="p-6 min-h-screen bg-[var(--background)] text-[var(--text-dashboard)]">
-      {/* Cabeçalho */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-        <h1 className="text-2xl font-bold">Hospedagens</h1>
+    <div className="max-w-6xl mx-auto p-6 min-h-screen">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Hospedagens</h1>
+          <p className="text-blue-300/80 text-sm">Hotéis e parceiros recomendados</p>
+        </div>
         <Link
           href="/dashboard/hospedagens/create"
-          className="px-4 py-2 rounded bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white transition"
+          className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-lg flex items-center gap-2"
         >
-          + Cadastrar
+          <span className="material-symbols-outlined">hotel</span>
+          Nova Hospedagem
         </Link>
       </div>
 
-      {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto rounded-lg border-2 border-white/20">
-        <table className="min-w-full rounded-lg border-collapse">
-          <thead className="bg-[var(--color-primary-light)]">
-            <tr className="border-2 border-white/20">
-              <th className="p-3 text-left text-xl font-bold text-white">Nome</th>
-              <th className="p-3 text-left text-xl font-bold text-white">Endereço</th>
-              <th className="p-3 text-left text-xl font-bold text-white">Preço Médio</th>
-              <th className="p-3 text-center text-xl font-bold text-white">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {hospedagens.map((h, idx) => (
-              <tr
-                key={h.id}
-                className={`border-2 border-white/20 ${
-                  idx % 2 === 0
-                    ? "bg-[rgba(8,38,73,0.7)]"
-                    : "bg-[rgba(6,76,142,0.7)]"
-                }`}
-              >
-                <td className="p-2 border-2 border-white/20">{h.nome}</td>
-                <td className="p-2 border-2 border-white/20">{h.endereco}</td>
-                <td className="p-2 border-2 border-white/20">{h.precoMedio}</td>
-                <td className="p-2 border-2 border-white/20 flex justify-center gap-2">
-                  <Link
-                    href={`/dashboard/hospedagens/${h.id}`}
-                    className="material-symbols-outlined text-white hover:text-yellow-400 cursor-pointer"
-                    title="Editar"
-                  >
-                    edit
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(h.id)}
-                    className="material-symbols-outlined text-white hover:text-red-400 cursor-pointer"
-                    title="Deletar"
-                  >
-                    delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Cards */}
-      <div className="md:hidden flex flex-col gap-4 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {hospedagens.map((h) => (
-          <div
-            key={h.id}
-            className="bg-[rgba(255,255,255,0.05)] shadow rounded p-4 border border-white/20 flex flex-col gap-2"
-          >
-            <div className="flex justify-between items-center">
-              <span className="font-bold">{h.nome}</span>
+          <div key={h.id} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 flex flex-col transition-all hover:border-white/40">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-bold text-white">{h.nome}</h2>
               <div className="flex gap-2">
-                <Link
-                  href={`/dashboard/hospedagens/${h.id}`}
-                  className="material-symbols-outlined text-white hover:text-yellow-400 cursor-pointer"
-                  title="Editar"
-                >
-                  edit
+                <Link href={`/dashboard/hospedagens/${h.id}`} className="text-yellow-500 hover:bg-yellow-500/20 p-2 rounded-lg transition">
+                  <span className="material-symbols-outlined text-sm">edit</span>
                 </Link>
-                <button
-                  onClick={() => handleDelete(h.id)}
-                  className="material-symbols-outlined text-white hover:text-red-400 cursor-pointer"
-                  title="Deletar"
-                >
-                  delete
+                <button onClick={() => handleDelete(h.id)} className="text-red-500 hover:bg-red-500/20 p-2 rounded-lg transition">
+                  <span className="material-symbols-outlined text-sm">delete</span>
                 </button>
               </div>
             </div>
-            <span className="text-sm opacity-80">{h.endereco}</span>
-            <span className="text-sm opacity-80">{h.precoMedio}</span>
+
+            <div className="flex items-start gap-2 text-gray-300 text-sm mb-6 flex-grow">
+              <span className="material-symbols-outlined text-blue-400 text-lg">location_on</span>
+              <p>{h.endereco}</p>
+            </div>
+
+            <div className="space-y-3 pt-4 border-t border-white/10">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-white/50 uppercase font-bold tracking-tighter">Distância</span>
+                <span className="text-blue-300 font-medium">{h.distanciaDoEvento} km</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-white/50 uppercase font-bold tracking-tighter">Preço Médio</span>
+                <span className="text-green-400 font-bold">{h.precoMedio}</span>
+              </div>
+            </div>
+
+            {h.site && (
+              <a href={h.site} target="_blank" className="mt-4 text-center text-xs py-2 bg-white/5 hover:bg-white/10 rounded-lg text-white transition">
+                Visitar Site Oficial
+              </a>
+            )}
           </div>
         ))}
       </div>

@@ -1,24 +1,30 @@
-"use client"; // necessário porque usa useState
+"use client";
 
 import { useState } from "react";
 
-/**
- * Componente responsável apenas pela interatividade
- * de mostrar/ocultar a bio do palestrante.
- */
 export default function DetalhesBio({ bio }) {
   const [aberto, setAberto] = useState(false);
 
   return (
-    <div>
+    <div className="mt-2">
       <button
         onClick={() => setAberto(!aberto)}
-        className="mt-2 px-3 py-1 bg-white/10 rounded hover:bg-white/20 transition text-sm"
+        className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors group"
       >
-        {aberto ? "Ocultar detalhes" : "Ver detalhes"}
+        <span className="material-symbols-outlined text-sm transition-transform duration-300" 
+              style={{ transform: aberto ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+          expand_more
+        </span>
+        {aberto ? "Ocultar Bio" : "Ver Biografia"}
       </button>
 
-      {aberto && <p className="mt-2 text-sm opacity-90">{bio}</p>}
+      {aberto && (
+        <div className="mt-4 p-4 bg-white/5 border border-white/5 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300">
+          <p className="text-sm leading-relaxed text-white/70 italic">
+            "{bio}"
+          </p>
+        </div>
+      )}
     </div>
   );
 }

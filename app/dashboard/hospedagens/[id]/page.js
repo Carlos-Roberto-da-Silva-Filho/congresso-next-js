@@ -1,24 +1,23 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
 import HospedagemForm from "../create";
+import { db } from "@/lib/firebaseAdmin";
 
-export default function EditHospedagemPage() {
-  const router = useRouter();
-  const { id } = useParams();
-  const [data, setData] = useState(null);
+export default async function HospedagemPage({ params }) {
+  const { id } = await params;
 
-  useEffect(() => {
-    async function fetchData() {
-      const res = await fetch(`/api/hospedagens/${id}`);
-      const json = await res.json();
-      setData(json);
-    }
-    fetchData();
-  }, [id]);
+  // 1. Verificamos se a intenção é criar um novo
+  if (id === "create") {
+    return <HospedagemForm />; 
+  }
 
-  if (!data) return <p>Carregando...</p>;
+  // 2. Se não for "create", buscamos no banco para editar
+  const doc = await db.collection("hospedagens").doc(id).get();
+  
+  if (!doc.exists) {
+    return <div className="p-6 text-white">Hospedagem não encontrada.</div>;
+  }
+
+  const data = { id: doc.id, ...doc.data() };
 
   return <HospedagemForm existingData={data} />;
 }
+

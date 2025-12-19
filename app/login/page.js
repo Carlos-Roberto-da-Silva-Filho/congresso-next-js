@@ -1,12 +1,13 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { auth } from '@/lib/firebaseClient';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -17,79 +18,97 @@ export default function LoginPage() {
     const email = formData.get('email');
     const password = formData.get('password');
 
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-      headers: { 'Content-Type': 'application/json' }
-    });
+    try {
+      // Login universal no Firebase Auth
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await userCredential.user.getIdToken();
 
-    if (res.ok) {
-      router.refresh();
-      router.push('/dashboard');
-    } else {
+      // Envia o token para criar o Session Cookie
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        body: JSON.stringify({ idToken }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+
       const data = await res.json();
-      setError(data.error);
+
+      if (res.ok) {
+        router.refresh();
+        setTimeout(() => router.push(data.redirectTo), 100);
+      } else {
+        setError(data.error);
+        setLoading(false);
+      }
+    } catch (err) {
+      setError("E-mail ou senha inválidos.");
       setLoading(false);
     }
   }
 
   return (
-    <div className="flex h-screen items-center justify-center bg-dashboard-nav">
+    <main className="min-h-screen bg-[#050505] flex items-center justify-center p-6 text-white">
+      <div className="w-full max-w-[400px] space-y-8">
+        <header className="text-center">
+          <h1 className="text-4xl font-black italic uppercase tracking-tighter">
+            Acesso <span className="text-blue-600">Restrito</span>
+          </h1>
+          <p className="text-[10px] font-black uppercase tracking-[4px] opacity-40 mt-2">
+            Identifique-se para continuar
+          </p>
+        </header>
 
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm p-8 rounded-xl shadow-xl 
-                   bg-white/20 backdrop-blur-lg 
-                   border border-white/30"
-      >
-        <h1 className="text-3xl text-white font-bold mb-6 text-center">
-          Login
-        </h1>
+        <form onSubmit={handleSubmit} className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] shadow-2xl space-y-4">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase p-4 rounded-2xl text-center tracking-widest">
+              {error}
+            </div>
+          )}
 
-        {error && (
-          <p className="text-red-300 text-sm mb-4 text-center">{error}</p>
-        )}
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4 mb-2 block">E-mail</label>
+            <input 
+              name="email" 
+              type="email" 
+              required 
+              className="w-full bg-black border border-white/10 p-4 rounded-2xl focus:border-blue-600 outline-none transition-all font-bold"
+              placeholder="seu@email.com"
+            />
+          </div>
 
-        {/* EMAIL */}
-        <label className="block mb-2 text-sm font-semibold text-white">
-          Email
-        </label>
-        <input
-          name="email"
-          type="email"
-          required
-          className="w-full p-3 mb-4 rounded-lg bg-white/10 text-white 
-                     placeholder-gray-200 border border-white/30 
-                     focus:outline-none focus:ring-2 focus:ring-white/50 text-center"
-          placeholder="admin@congresso.com"
-        />
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4 mb-2 block">Senha</label>
+            <input 
+              name="password" 
+              type="password" 
+              required 
+              className="w-full bg-black border border-white/10 p-4 rounded-2xl focus:border-blue-600 outline-none transition-all font-bold"
+              placeholder="••••••••"
+            />
+          </div>
 
-        {/* SENHA */}
-        <label className="block mb-2 text-sm font-semibold text-white">
-          Senha
-        </label>
-        <input
-          name="password"
-          type="password"
-          required
-          className="w-full p-3 mb-6 rounded-lg bg-white/10 text-white 
-                     placeholder-gray-200 border border-white/30 
-                     focus:outline-none focus:ring-2 focus:ring-white/50 text-center"
-          placeholder="Sua senha"
-        />
+          <button 
+            type="submit" 
+            disabled={loading}
+            className={`w-full py-5 rounded-2xl font-black uppercase italic tracking-widest transition-all ${
+              loading 
+                ? 'bg-white/10 text-white/20 cursor-not-allowed' 
+                : 'bg-white text-black hover:bg-blue-600 hover:text-white active:scale-95'
+            }`}
+          >
+            {loading ? 'Validando...' : 'Entrar no Sistema'}
+          </button>
+        </form>
 
-        {/* BOTÃO */}
-        <button
-          disabled={loading}
-          className="w-full p-3 rounded-lg 
-                     bg-white text-blue-900 font-bold 
-                     hover:bg-blue-50 transition 
-                     disabled:bg-gray-300 disabled:text-gray-500"
-        >
-          {loading ? 'Entrando...' : 'Entrar'}
-        </button>
-      </form>
-
-    </div>
+        <footer className="text-center">
+          <button 
+            type="button"
+            onClick={() => router.push('/')}
+            className="text-[10px] font-black uppercase tracking-widest opacity-20 hover:opacity-100 transition-all"
+          >
+            ← Voltar para a Home
+          </button>
+        </footer>
+      </div>
+    </main>
   );
 }

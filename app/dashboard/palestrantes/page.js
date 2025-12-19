@@ -5,11 +5,19 @@ import Link from "next/link";
 
 export default function PalestrantesPage() {
   const [palestrantes, setPalestrantes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   async function fetchPalestrantes() {
-    const res = await fetch("/api/palestrantes");
-    const data = await res.json();
-    setPalestrantes(data);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/palestrantes");
+      const data = await res.json();
+      setPalestrantes(data);
+    } catch (error) {
+      console.error("Erro ao carregar palestrantes:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleDelete(id) {
@@ -28,99 +36,88 @@ export default function PalestrantesPage() {
     fetchPalestrantes();
   }, []);
 
+  if (loading) return <div className="text-white p-8">A carregar palestrantes...</div>;
+
   return (
-    <div className="p-6 min-h-screen bg-[var(--background)] text-[var(--text-dashboard)]">
+    <div className="max-w-6xl mx-auto p-6 min-h-screen">
       {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-3">
-        <h1 className="text-2xl font-semibold text-white">Palestrantes</h1>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Palestrantes</h1>
+          <p className="text-blue-300/80 text-sm">Gestão de especialistas e convidados do evento</p>
+        </div>
 
         <Link
           href="/dashboard/palestrantes/create"
-          className="px-4 py-2 rounded-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white font-medium transition"
+          className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-lg flex items-center gap-2 w-fit"
         >
-          + Cadastrar
+          <span className="material-symbols-outlined">add</span>
+          Novo Palestrante
         </Link>
       </div>
 
-      {/* Tabela Desktop */}
-      <div className="hidden md:block overflow-x-auto rounded-xl border border-white/20">
-        <table className="min-w-full border-collapse">
-          <thead className="bg-[var(--color-primary-light)]">
-            <tr>
-              <th className="p-3 text-left text-sm font-semibold text-white">
-                Nome
-              </th>
-              <th className="p-3 text-left text-sm font-semibold text-white">
-                Especialidade
-              </th>
-              <th className="p-3 text-center text-sm font-semibold text-white">
-                Ações
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {palestrantes.map((p, idx) => (
-              <tr
-                key={p.id}
-                className={`${
-                  idx % 2 === 0
-                    ? "bg-[rgba(8,38,73,0.6)]"
-                    : "bg-[rgba(6,76,142,0.6)]"
-                } border-t border-white/10 hover:bg-white/5 transition`}
-              >
-                <td className="p-3">{p.nome}</td>
-                <td className="p-3">{p.especialidade}</td>
-                <td className="p-3 flex justify-center gap-3">
-                  <Link
-                    href={`/dashboard/palestrantes/${p.id}`}
-                    className="material-symbols-outlined text-white/80 hover:text-yellow-400 transition"
-                    title="Editar"
-                  >
-                    edit
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(p.id)}
-                    className="material-symbols-outlined text-white/80 hover:text-red-400 transition"
-                    title="Deletar"
-                  >
-                    delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Cards Mobile */}
-      <div className="md:hidden flex flex-col gap-4 mt-4">
+      {/* Grid de Cards Refinado */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {palestrantes.map((p) => (
-          <div
-            key={p.id}
-            className="bg-white/5 border border-white/20 rounded-xl p-4 flex flex-col gap-2 shadow-sm"
+          <div 
+            key={p.id} // O ID continua aqui apenas para o React (não visível)
+            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden shadow-xl flex flex-col transition-all hover:border-white/40"
           >
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">{p.nome}</span>
-              <div className="flex gap-2">
+            {/* Topo do Card */}
+            <div className="flex items-center p-6 border-b border-white/10 gap-4">
+              <img 
+                src={p.fotoURL || "/images/placeholder-user.png"} 
+                alt={p.nome} 
+                className="w-20 h-20 rounded-full object-cover border-2 border-blue-400 shadow-md"
+              />
+              <div className="flex-grow">
+                <h2 className="text-xl font-bold text-white">{p.nome}</h2>
+                <p className="text-blue-300 text-sm font-medium">{p.especialidade}</p>
+              </div>
+              
+              {/* Ações Rápidas */}
+              <div className="flex flex-col gap-2">
                 <Link
-                  href={`/dashboard/palestrantes/${p.id}`}
-                  className="material-symbols-outlined text-white/80 hover:text-yellow-400 transition"
+                  href={`/dashboard/palestrantes/${p.id}`} // O ID é usado na rota mas não é exibido texto
+                  className="p-2 bg-yellow-500/20 text-yellow-500 rounded-lg hover:bg-yellow-500 hover:text-white transition-colors"
+                  title="Editar"
                 >
-                  edit
+                  <span className="material-symbols-outlined text-sm">edit</span>
                 </Link>
                 <button
                   onClick={() => handleDelete(p.id)}
-                  className="material-symbols-outlined text-white/80 hover:text-red-400 transition"
+                  className="p-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"
+                  title="Eliminar"
                 >
-                  delete
+                  <span className="material-symbols-outlined text-sm">delete</span>
                 </button>
               </div>
             </div>
-            <span className="text-sm opacity-80">{p.especialidade}</span>
+            
+            {/* Biografia */}
+            <div className="p-6 flex-grow">
+              <h3 className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-2">Resumo Profissional</h3>
+              <p className="text-gray-200 text-sm leading-relaxed italic">
+                {p.bio ? `"${p.bio}"` : "Sem biografia registada."}
+              </p>
+            </div>
+
+            {/* Rodapé Clean */}
+            <div className="px-6 py-3 bg-black/10 flex justify-end items-center border-t border-white/5">
+              <div className="flex items-center gap-1.5 text-blue-400 text-[11px] font-semibold uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                Especialista Verificado
+              </div>
+            </div>
           </div>
         ))}
       </div>
+
+      {palestrantes.length === 0 && (
+        <div className="text-center py-20 bg-white/5 rounded-2xl border border-dashed border-white/20">
+          <p className="text-gray-400 italic">Ainda não foram adicionados palestrantes à base de dados.</p>
+        </div>
+      )}
     </div>
   );
 }

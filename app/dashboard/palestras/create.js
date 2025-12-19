@@ -1,156 +1,118 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { palestraSchema } from "@/lib/schemas/palestras";
 
 export default function PalestraForm({ existingData }) {
   const router = useRouter();
-
+  const [errors, setErrors] = useState({});
+  const [palestrantes, setPalestrantes] = useState([]); // Lista para o Select
   const [form, setForm] = useState({
-    titulo: "",
-    descricao: "",
-    dataHora: "",
-    local: "",
-    palestranteId: "",
+    titulo: "", descricao: "", data: "", horario: "", palestranteId: "", local: "",
   });
 
-  const [palestrantes, setPalestrantes] = useState([]);
-
   useEffect(() => {
-    async function fetchPalestrantes() {
+    // 1. Carrega dados se for edição
+    if (existingData) setForm(existingData);
+
+    // 2. Carrega lista de palestrantes para o dropdown
+    async function loadPalestrantes() {
       const res = await fetch("/api/palestrantes");
       const data = await res.json();
       setPalestrantes(data);
     }
-
-    fetchPalestrantes();
-
-    if (existingData) {
-      setForm({
-        titulo: existingData.titulo || "",
-        descricao: existingData.descricao || "",
-        dataHora: existingData.dataHora || "",
-        local: existingData.local || "",
-        palestranteId: existingData.palestranteId || "",
-      });
-    }
+    loadPalestrantes();
   }, [existingData]);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  }
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: null });
+  };
 
   async function handleSubmit(e) {
     e.preventDefault();
-
-    let method = "POST";
-    let body = { ...form };
-
-    if (existingData?.id) {
-      body.id = existingData.id;
-      method = "PUT";
+    
+    const result = palestraSchema.safeParse(form);
+    if (!result.success) {
+      setErrors(result.error.format());
+      return;
     }
 
-    await fetch("/api/palestras", {
+    const method = existingData?.id ? "PUT" : "POST";
+    const res = await fetch("/api/palestras", {
       method,
-      body: JSON.stringify(body),
+      body: JSON.stringify(existingData?.id ? { ...form, id: existingData.id } : form),
       headers: { "Content-Type": "application/json" },
     });
 
-    router.push("/dashboard/palestras");
+    if (res.ok) {
+      router.push("/dashboard/palestras");
+      router.refresh();
+    } else {
+      const errorData = await res.json();
+      if (errorData.errors) setErrors(errorData.errors);
+    }
   }
 
-  const inputClass =
-    "w-full rounded-lg px-3 py-2 bg-black/20 text-white " +
-    "border border-white/60 placeholder-white/60 " +
-    "focus:outline-none focus:ring-2 focus:ring-white/40 " +
-    "hover:border-white transition";
+  const ErrorMsg = ({ field }) => (
+    errors[field] && <span className="text-red-400 text-[10px] mt-1 italic">{errors[field]._errors[0]}</span>
+  );
+
+  const inputClass = (field) => `w-full p-3 rounded-xl bg-black/40 border ${errors[field] ? 'border-red-500/60' : 'border-white/10'} text-white outline-none transition-all`;
 
   return (
-    <div className="p-6 min-h-screen flex flex-col items-center bg-[var(--background)]">
-      <h1 className="text-2xl font-bold mb-6 text-white">
-        {existingData ? "Editar" : "Cadastrar"} Palestra
-      </h1>
+    <div className="p-4 md:p-10 min-h-screen flex flex-col items-center">
+      <div className="w-full max-w-2xl">
+        <Link href="/dashboard/palestras" className="text-blue-400 text-sm flex items-center gap-1 mb-6">
+          <span className="material-symbols-outlined text-sm">arrow_back</span> Voltar
+        </Link>
+        
+        <h1 className="text-3xl font-bold mb-8 text-white">{existingData ? "Editar Palestra" : "Nova Palestra"}</h1>
 
-      <form className="w-full max-w-lg flex flex-col gap-4" onSubmit={handleSubmit}>
-        {/* Título */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm text-white/80">Título</label>
-          <input
-            type="text"
-            name="titulo"
-            value={form.titulo}
-            onChange={handleChange}
-            required
-            className={inputClass}
-          />
-        </div>
-
-        {/* Descrição */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm text-white/80">Descrição</label>
-          <textarea
-            name="descricao"
-            value={form.descricao}
-            onChange={handleChange}
-            className={`${inputClass} h-28 resize-none`}
-          />
-        </div>
-
-        {/* Data e Local */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex flex-col gap-1 flex-1">
-            <label className="text-sm text-white/80">Data e hora</label>
-            <input
-              type="datetime-local"
-              name="dataHora"
-              value={form.dataHora}
-              onChange={handleChange}
-              required
-              className={inputClass}
-            />
+        <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col gap-5">
+          
+          <div className="flex flex-col">
+            <label className="text-[10px] font-bold text-blue-200/60 uppercase tracking-widest mb-2">Título da Palestra</label>
+            <input type="text" name="titulo" value={form.titulo} onChange={handleChange} className={inputClass('titulo')} placeholder="Ex: O Futuro da IA" />
+            <ErrorMsg field="titulo" />
           </div>
 
-          <div className="flex flex-col gap-1 flex-1">
-            <label className="text-sm text-white/80">Local</label>
-            <input
-              type="text"
-              name="local"
-              value={form.local}
-              onChange={handleChange}
-              className={inputClass}
-            />
+          <div className="flex flex-col">
+            <label className="text-[10px] font-bold text-blue-200/60 uppercase tracking-widest mb-2">Palestrante</label>
+            <select name="palestranteId" value={form.palestranteId} onChange={handleChange} className={inputClass('palestranteId')}>
+              <option value="">Selecione um palestrante...</option>
+              {palestrantes.map(p => (
+                <option key={p.id} value={p.id} className="bg-slate-800">{p.nome}</option>
+              ))}
+            </select>
+            <ErrorMsg field="palestranteId" />
           </div>
-        </div>
 
-        {/* Palestrante */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm text-white/80">Palestrante</label>
-          <select
-            name="palestranteId"
-            value={form.palestranteId}
-            onChange={handleChange}
-            required
-            className={inputClass}
-          >
-            <option value="">Selecione o palestrante</option>
-            {palestrantes.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="flex flex-col">
+            <label className="text-[10px] font-bold text-blue-200/60 uppercase tracking-widest mb-2">Descrição</label>
+            <textarea name="descricao" value={form.descricao} onChange={handleChange} rows="3" className={inputClass('descricao')} placeholder="O que será abordado?" />
+            <ErrorMsg field="descricao" />
+          </div>
 
-        {/* Botão */}
-        <button
-          type="submit"
-          className="mt-4 px-4 py-2 rounded-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white font-medium transition"
-        >
-          {existingData ? "Atualizar" : "Cadastrar"}
-        </button>
-      </form>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="flex flex-col">
+              <label className="text-[10px] font-bold text-blue-200/60 uppercase tracking-widest mb-2">Data</label>
+              <input type="date" name="data" value={form.data} onChange={handleChange} className={inputClass('data')} />
+              <ErrorMsg field="data" />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[10px] font-bold text-blue-200/60 uppercase tracking-widest mb-2">Horário</label>
+              <input type="time" name="horario" value={form.horario} onChange={handleChange} className={inputClass('horario')} />
+              <ErrorMsg field="horario" />
+            </div>
+          </div>
+
+          <button type="submit" className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest transition-all">
+            {existingData ? "Salvar Palestra" : "Criar Palestra"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -1,34 +1,26 @@
-import { NextResponse } from "next/server";
 import { createSession } from "@/lib/session";
+import { NextResponse } from "next/server";
+import { admin } from "@/lib/firebaseAdmin";
 
 export async function POST(req) {
   try {
-    const { email, password } = await req.json();
+    const { idToken } = await req.json();
 
-    // 1. Troca senha por ID Token (Google Identity Toolkit)
-    const apiKey = process.env.FIREBASE_API_KEY;
-    const authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`;
-
-    const res = await fetch(authUrl, {
-      method: "POST",
-      body: JSON.stringify({ email, password, returnSecureToken: true }),
-      headers: { "Content-Type": "application/json" },
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: data.error?.message || "Erro de login" },
-        { status: 401 }
-      );
+    if (!idToken) {
+      return NextResponse.json({ error: "Token não fornecido" }, { status: 400 });
     }
 
-    // 2. Gera o Cookie de Sessão HTTP-Only seguro via Admin SDK
-    await createSession(data.idToken);
+    // 1. Cria a sessão segura usando o método que o professor ensinou
+    await createSession(idToken);
 
-    return NextResponse.json({ success: true });
+    // 2. Verifica se é admin para dizer ao frontend para onde ir
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const isAdmin = decodedToken.email === process.env.ADMIN_EMAIL;
+    const redirectTo = isAdmin ? "/dashboard" : "/area_usuario";
+
+    return NextResponse.json({ success: true, redirectTo });
   } catch (error) {
-    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
+    console.error("Erro no servidor de login:", error);
+    return NextResponse.json({ error: "Erro na autenticação" }, { status: 401 });
   }
 }

@@ -8,7 +8,8 @@ import Footer from '../components/Footer';
 export default function AreaUsuario() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('programacao'); // 'programacao' ou 'agenda'
+  const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState('programacao'); 
   const [userData, setUserData] = useState(null);
   const [allPalestras, setAllPalestras] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -19,9 +20,11 @@ export default function AreaUsuario() {
 
   async function fetchData() {
     try {
-      const res = await fetch('/api/usuarios/me');
+      // O 'no-store' impede que a Vercel mostre dados antigos do cache
+      const res = await fetch('/api/usuarios/me', { cache: 'no-store' });
       if (!res.ok) throw new Error('Sessão expirada');
       const data = await res.json();
+      
       setUserData(data.user);
       setAllPalestras(data.palestras || []);
       setSelectedIds(data.user.palestrasIds || []);
@@ -39,14 +42,14 @@ export default function AreaUsuario() {
   }
 
   async function togglePalestra(palestra) {
+    if (isSaving) return; // Evita cliques múltiplos simultâneos
+
     let newSelection = [...selectedIds];
     const horarioAtual = palestra.horario;
 
     if (selectedIds.includes(palestra.id)) {
-      // CANCELAR INSCRIÇÃO: Remove o ID do array
       newSelection = newSelection.filter(id => id !== palestra.id);
     } else {
-      // INSCREVER: Checa conflito
       const conflito = allPalestras.find(p => 
         selectedIds.includes(p.id) && p.horario === horarioAtual
       );
@@ -58,10 +61,11 @@ export default function AreaUsuario() {
       newSelection.push(palestra.id);
     }
 
-    // Atualiza interface imediatamente
+    // 1. Atualiza interface imediatamente (Otimista)
     setSelectedIds(newSelection);
+    setIsSaving(true);
 
-    // Sincroniza com o banco (sobrescreve o array palestrasIds)
+    // 2. Sincroniza com o banco
     try {
       const res = await fetch('/api/usuarios/agenda', {
         method: 'POST',
@@ -71,10 +75,16 @@ export default function AreaUsuario() {
 
       if (!res.ok) {
         alert("Erro ao salvar no banco. Tente novamente.");
-        fetchData(); // Recarrega dados reais em caso de erro
+        fetchData(); // Reverte para o estado real do banco se falhar
+      } else {
+        // Limpa o cache do servidor Next.js
+        router.refresh();
       }
     } catch (error) {
       console.error("Erro de conexão");
+      fetchData();
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -91,7 +101,6 @@ export default function AreaUsuario() {
       <Header />
       
       <section className="flex-grow pt-32 pb-20 px-6 max-w-6xl mx-auto w-full">
-        {/* CABEÇALHO COM BOTÃO SAIR */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 mb-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <div>
             <h1 className="text-3xl font-black uppercase italic tracking-tighter">
@@ -118,7 +127,6 @@ export default function AreaUsuario() {
               </button>
             </div>
 
-            {/* BOTÃO SAIR REINSERIDO */}
             <button 
               onClick={handleLogout}
               className="px-6 py-3 border border-red-500/20 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
@@ -128,7 +136,6 @@ export default function AreaUsuario() {
           </div>
         </div>
 
-        {/* LISTAGEM DE PALESTRAS */}
         <div className="grid gap-4">
           {(activeTab === 'programacao' ? allPalestras : minhasPalestras).map((palestra) => (
             <div 
@@ -150,19 +157,20 @@ export default function AreaUsuario() {
               </div>
               
               <button 
+                disabled={isSaving}
                 onClick={() => togglePalestra(palestra)}
                 className={`w-full md:w-auto px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
                   selectedIds.includes(palestra.id) 
                     ? 'bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/40' 
                     : 'bg-white text-black hover:bg-blue-600 hover:text-white'
-                }`}
+                } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {selectedIds.includes(palestra.id) ? (
-                   <span className="group-hover:hidden">✓ Inscrito</span>
+                   <>
+                     <span className="group-hover:hidden">✓ Inscrito</span>
+                     <span className="hidden group-hover:inline">✕ Cancelar</span>
+                   </>
                 ) : '+ Participar'}
-                {selectedIds.includes(palestra.id) && (
-                   <span className="hidden group-hover:inline">✕ Cancelar</span>
-                )}
               </button>
             </div>
           ))}

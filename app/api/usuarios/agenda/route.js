@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    // 1. Valida a sessão do congressista
     const decodedClaims = await verifySession();
     if (!decodedClaims) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
@@ -12,27 +11,15 @@ export async function POST(req) {
 
     const { palestrasIds } = await req.json();
 
-    if (!Array.isArray(palestrasIds)) {
-      return NextResponse.json({ error: "Formato de dados inválido" }, { status: 400 });
-    }
-
-    // 2. Atualiza o array de IDs dentro do documento do usuário
-    // Usamos o UID que vem do token da sessão
-    await db.collection("usuarios").doc(decodedClaims.uid).update({
+    // Usamos .set com { merge: true } para garantir que grave mesmo se o doc for novo
+    await db.collection("usuarios").doc(decodedClaims.uid).set({
       palestrasIds: palestrasIds,
-      ultimaAtualizacao: new Date().toISOString()
-    });
+      atualizadoEm: new Date().toISOString()
+    }, { merge: true });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Agenda sincronizada com sucesso!" 
-    });
-
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("ERRO CRÍTICO NA AGENDA:", error);
-    return NextResponse.json({ 
-      error: "Erro ao salvar agenda", 
-      details: error.message 
-    }, { status: 500 });
+    console.error("Erro ao gravar no banco:", error);
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

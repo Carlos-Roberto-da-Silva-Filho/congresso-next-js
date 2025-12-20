@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+\# 🚀 Connect Eventos - Plataforma de Gestão de Congressos
 
-## Getting Started
 
-First, run the development server:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Este projeto é uma aplicação full-stack desenvolvida com \*\*Next.js\*\*, integrada ao \*\*Firebase\*\* e \*\*GraphQL (Yoga)\*\*. A plataforma permite que congressistas se inscrevam em palestras, gerenciem sua agenda em tempo real e permite que administradores acessem relatórios avançados.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+\## 📋 Sumário de Atendimento aos Requisitos (Rúbricas)
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+\### 1. Arquitetura e Performance (Next.js \& Serverless)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+\- \*\*Deploy Serverless:\*\* Aplicação publicada na \[Vercel](https://vercel.com/).
 
-## Deploy on Vercel
+\- \*\*Banco de Dados:\*\* Utilização do \*\*Google Firebase Firestore\*\* para persistência de dados (NoSQL).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+\- \*\*API Routes:\*\* Implementação de endpoints em `app/api/` para CRUD de usuários, autenticação e gestão de agenda.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+\- \*\*GraphQL Yoga:\*\* Implementação de um servidor GraphQL em `/api/graphql` para geração de relatórios complexos (adminReport) unindo dados de palestrantes e palestras.
+
+
+
+\### 2. Rotas e Navegação
+
+\- \*\*Rota Principal:\*\* Página inicial (`/`) desenvolvida com layout responsivo.
+
+\- \*\*Rotas Dinâmicas:\*\* Implementação de slugs e IDs para gerenciamento de usuários e conteúdos específicos.
+
+\- \*\*Server-Side Functions:\*\* Uso de \*\*Server Components\*\* e funções de servidor para busca de dados segura diretamente do Firestore.
+
+\- \*\*Navegação:\*\* Uso do componente `next/link` para transições de página sem reload (SPA experience).
+
+
+
+\### 3. Componentes e Design
+
+\- \*\*Estrutura Modular:\*\* Código organizado em componentes reutilizáveis: `Header`, `Footer`, `Formulários`, `Card de Palestras`.
+
+\- \*\*Design Responsivo:\*\* Interface adaptável para dispositivos móveis e desktop utilizando \*\*Tailwind CSS\*\*.
+
+\- \*\*Layout:\*\* Uso de `layout.js` para manter a persistência de elementos globais (Header/Footer).
+
+
+
+\### 4. Formulários, Validação e Segurança
+
+\- \*\*Formulários:\*\* Criação de formulários de \*\*Cadastro de Usuário\*\* e \*\*Login\*\* com estados de carregamento e erro.
+
+\- \*\*Autenticação de Usuários:\*\* Implementação de sistema de Login/Logout com \*\*Cookies Seguro\*\* e \*\*JWT\*\*.
+
+\- \*\*Validação Full-Stack:\*\* - \*\*Front-end:\*\* Verificação de campos obrigatórios e feedback imediato.
+
+&nbsp; - \*\*Back-end:\*\* Middleware e funções de verificação de sessão (`verifySession`) protegendo rotas sensíveis.
+
+\- \*\*Segurança:\*\* 100% das chaves privadas são gerenciadas via Variáveis de Ambiente na Vercel, nunca expostas no front-end.
+
+
+
+---
+
+
+
+\## 🛠️ Tecnologias Principais
+
+
+
+\- \*\*Framework:\*\* Next.js 14 (App Router)
+
+\- \*\*Linguagem:\*\* JavaScript / React
+
+\- \*\*Estilização:\*\* Tailwind CSS
+
+\- \*\*API:\*\* REST (Next API Routes) \& GraphQL (Yoga)
+
+\- \*\*Banco de Dados:\*\* Firebase Firestore
+
+\- \*\*Autenticação:\*\* Firebase Admin SDK
+
+
+
+---
+
+
+
+
+
+🧑‍💻 Autor
+
+Desenvolvido por Carlos como projeto avaliativo para a disciplina de Desenvolvimento Web com Next.js.
+

@@ -19,10 +19,8 @@ export default function AreaUsuario() {
 
   async function fetchData() {
     try {
-      // Esta API vai ler o cookie httpOnly lá no servidor e saber quem é o Pedro
       const res = await fetch('/api/usuarios/me');
       if (!res.ok) throw new Error('Sessão expirada');
-      
       const data = await res.json();
       setUserData(data.user);
       setAllPalestras(data.palestras || []);
@@ -36,37 +34,51 @@ export default function AreaUsuario() {
 
   async function handleLogout() {
     await fetch('/api/logout', { method: 'POST' });
-    router.refresh(); // Limpa o cache das rotas
+    router.refresh(); 
     router.push('/login');
   }
 
   async function togglePalestra(palestra) {
     let newSelection = [...selectedIds];
-    
+    const horarioAtual = palestra.horario;
+
     if (selectedIds.includes(palestra.id)) {
+      // CANCELAR INSCRIÇÃO: Remove o ID do array
       newSelection = newSelection.filter(id => id !== palestra.id);
     } else {
-      // Trava de conflito de horário
+      // INSCREVER: Checa conflito
       const conflito = allPalestras.find(p => 
-        selectedIds.includes(p.id) && p.horarioExibicao === palestra.horarioExibicao
+        selectedIds.includes(p.id) && p.horario === horarioAtual
       );
 
       if (conflito) {
-        alert(`Conflito: Você já está inscrito em "${conflito.titulo}" às ${conflito.horarioExibicao}h.`);
+        alert(`Conflito: Você já tem uma atividade marcada para às ${horarioAtual}h.`);
         return;
       }
       newSelection.push(palestra.id);
     }
 
+    // Atualiza interface imediatamente
     setSelectedIds(newSelection);
 
-    // Salva a nova agenda no banco via API segura
-    await fetch('/api/usuarios/agenda', {
-      method: 'POST',
-      body: JSON.stringify({ palestrasIds: newSelection }),
-      headers: { 'Content-Type': 'application/json' }
-    });
+    // Sincroniza com o banco (sobrescreve o array palestrasIds)
+    try {
+      const res = await fetch('/api/usuarios/agenda', {
+        method: 'POST',
+        body: JSON.stringify({ palestrasIds: newSelection }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!res.ok) {
+        alert("Erro ao salvar no banco. Tente novamente.");
+        fetchData(); // Recarrega dados reais em caso de erro
+      }
+    } catch (error) {
+      console.error("Erro de conexão");
+    }
   }
+
+  const minhasPalestras = allPalestras.filter(p => selectedIds.includes(p.id));
 
   if (loading) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white font-black italic uppercase tracking-widest">
@@ -74,13 +86,12 @@ export default function AreaUsuario() {
     </div>
   );
 
-  const minhasPalestras = allPalestras.filter(p => selectedIds.includes(p.id));
-
   return (
     <main className="min-h-screen bg-[#050505] text-white flex flex-col">
       <Header />
       
       <section className="flex-grow pt-32 pb-20 px-6 max-w-6xl mx-auto w-full">
+        {/* CABEÇALHO COM BOTÃO SAIR */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 mb-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <div>
             <h1 className="text-3xl font-black uppercase italic tracking-tighter">
@@ -106,7 +117,8 @@ export default function AreaUsuario() {
                 Minha Agenda ({selectedIds.length})
               </button>
             </div>
-            
+
+            {/* BOTÃO SAIR REINSERIDO */}
             <button 
               onClick={handleLogout}
               className="px-6 py-3 border border-red-500/20 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
@@ -116,6 +128,7 @@ export default function AreaUsuario() {
           </div>
         </div>
 
+        {/* LISTAGEM DE PALESTRAS */}
         <div className="grid gap-4">
           {(activeTab === 'programacao' ? allPalestras : minhasPalestras).map((palestra) => (
             <div 
@@ -124,7 +137,7 @@ export default function AreaUsuario() {
             >
               <div className="flex items-center gap-6 w-full">
                 <div className="text-2xl font-black italic text-blue-600 min-w-[90px]">
-                  {palestra.horarioExibicao || palestra.horario}
+                  {palestra.horario}
                 </div>
                 <div>
                   <h3 className="text-lg font-bold uppercase tracking-tight group-hover:text-blue-400 transition-colors">
@@ -140,11 +153,16 @@ export default function AreaUsuario() {
                 onClick={() => togglePalestra(palestra)}
                 className={`w-full md:w-auto px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
                   selectedIds.includes(palestra.id) 
-                    ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
+                    ? 'bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/40' 
                     : 'bg-white text-black hover:bg-blue-600 hover:text-white'
                 }`}
               >
-                {selectedIds.includes(palestra.id) ? '✓ Inscrito' : '+ Participar'}
+                {selectedIds.includes(palestra.id) ? (
+                   <span className="group-hover:hidden">✓ Inscrito</span>
+                ) : '+ Participar'}
+                {selectedIds.includes(palestra.id) && (
+                   <span className="hidden group-hover:inline">✕ Cancelar</span>
+                )}
               </button>
             </div>
           ))}
@@ -161,4 +179,3 @@ export default function AreaUsuario() {
     </main>
   );
 }
-

@@ -1,30 +1,30 @@
 import { verifySession } from "@/lib/session";
-import AdminNavigation from "./components/AdminNavigation";
+import { redirect } from "next/navigation";
+import { db } from "@/lib/firebaseAdmin";
+import AdminNavigation from "@/app/dashboard/components/AdminNavigation"; 
 
 export default async function DashboardLayout({ children }) {
-  // O Middleware já garantiu que há um cookie, aqui apenas pegamos os dados do usuário
-  const user = await verifySession();
+  const session = await verifySession();
 
-  // Se por algum erro extremo o verifySession falhar (ex: banco fora do ar), 
-  // evitamos o loop retornando apenas uma mensagem limpa
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-white">
-        Sessão inválida. Por favor, faça <a href="/login" className="text-blue-500 ml-1">login novamente</a>.
-      </div>
-    );
+  if (!session) redirect('/login');
+
+  const userDoc = await db.collection("usuarios").doc(session.uid).get();
+  const userData = userDoc.data();
+
+  // Garante que só admin entra aqui
+  if (userData?.role !== 'admin') {
+    redirect('/area_usuario');
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const isAdmin = user.email === adminEmail;
-
   return (
-    <div className="min-h-screen bg-[#050505]">
-      {/* O menu fica aqui, renderizado UMA ÚNICA VEZ para todas as sub-páginas */}
-      <AdminNavigation user={user} isAdmin={isAdmin} />
+    <div className="flex flex-col min-h-screen bg-[#050505] text-white">
+      {/* Passando os dados necessários para o componente */}
+      <AdminNavigation user={userData} isAdmin={true} />
       
-      <main className="p-6 md:p-12 max-w-7xl mx-auto">
-        {children}
+      <main className="flex-1 overflow-y-auto">
+        <div className="p-8 lg:p-12 max-w-7xl mx-auto">
+          {children}
+        </div>
       </main>
     </div>
   );

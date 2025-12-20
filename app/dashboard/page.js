@@ -3,12 +3,16 @@ import { db } from "@/lib/firebaseAdmin";
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  // Busca dados reais do banco
-  const palestrasSnap = await db.collection("palestras").get();
+  // 1. Busca os dados reais
+  const palestrasSnap = await db.collection("palestras").orderBy("dataHora", "asc").get();
   const usuariosSnap = await db.collection("usuarios").get();
 
-  const totalPalestras = palestrasSnap.size;
-  const totalInscritos = usuariosSnap.size;
+  const palestras = palestrasSnap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    // Lógica de horário que você já usa no site: "2025-12-17T06:26" -> "06:26"
+    horario: doc.data().dataHora ? doc.data().dataHora.split('T')[1] : "--:--"
+  }));
 
   return (
     <div className="space-y-8">
@@ -21,15 +25,25 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard label="Status do Sistema" value="ONLINE" color="text-green-500" />
-        <StatCard label="Inscrições no Banco" value={totalInscritos.toString().padStart(2, '0')} color="text-blue-500" />
-        <StatCard label="Palestras Cadastradas" value={totalPalestras.toString().padStart(2, '0')} color="text-purple-500" />
+        <StatCard label="Inscrições no Banco" value={usuariosSnap.size.toString().padStart(2, '0')} color="text-blue-500" />
+        <StatCard label="Palestras Cadastradas" value={palestras.length.toString().padStart(2, '0')} color="text-purple-500" />
       </div>
 
-      <div className="p-10 rounded-[2.5rem] border border-white/10 bg-white/5 shadow-2xl">
-        <h2 className="text-xl font-bold uppercase mb-4 text-white">Bem-vindo, Gestor</h2>
-        <p className="text-white/60 leading-relaxed">
-          O sistema está sincronizado com o Firestore. Atualmente existem {totalPalestras} palestras e {totalInscritos} usuários registrados no banco de dados.
-        </p>
+      {/* LISTAGEM ADICIONADA: Agora o gestor vê o que está cadastrado */}
+      <div className="p-8 rounded-[2.5rem] border border-white/10 bg-white/5">
+        <h2 className="text-xl font-bold uppercase mb-6 text-white italic text-center md:text-left">Cronograma Ativo</h2>
+        <div className="grid gap-4">
+          {palestras.map((p) => (
+            <div key={p.id} className="flex flex-col md:flex-row md:items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 hover:border-blue-600/30 transition-all">
+              <div>
+                <span className="text-blue-500 font-black text-[10px] uppercase tracking-widest">{p.horario} — {p.local}</span>
+                <h3 className="text-white font-bold uppercase text-sm">{p.titulo}</h3>
+              </div>
+              <p className="text-white/30 text-[10px] font-bold uppercase mt-2 md:mt-0">{p.palestrante || p.palestranteNome}</p>
+            </div>
+          ))}
+          {palestras.length === 0 && <p className="text-white/40 italic text-center">Nenhuma palestra no banco.</p>}
+        </div>
       </div>
     </div>
   );

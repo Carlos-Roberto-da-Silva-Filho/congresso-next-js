@@ -1,91 +1,102 @@
+'use client';
+
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 export default function LocalEventoPage() {
   return (
-    <main className="min-h-screen bg-[#050505] text-white">
+    <main className="min-h-screen bg-[#050505] text-white flex flex-col">
       <Header />
 
+      {/* Hero Section */}
       <section className="pt-40 pb-16 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-[3px]">
             Como chegar
           </div>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6 uppercase italic">
-            O LOCAL DO <span className="text-blue-600 text-not-italic">EVENTO</span>
+          <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-6 uppercase italic">
+            O LOCAL DO <span className="text-blue-600 not-italic">EVENTO</span>
           </h1>
-          <p className="max-w-2xl text-white/40 text-lg leading-relaxed">
-            Nos encontraremos na bela cidade de Tijucas, em Santa Catarina.
+          <p className="max-w-2xl text-white/40 text-lg leading-relaxed font-bold uppercase tracking-tight">
+            Nos encontraremos na bela cidade de <span className="text-white">Tijucas</span>, em Santa Catarina.
           </p>
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 pb-32">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      {/* Grid de Conteúdo */}
+      <section className="max-w-6xl mx-auto px-6 pb-32 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           
-          {/* --- ÁREA DA IMAGEM (Ajustada) --- */}
-          <div className="aspect-video lg:aspect-square w-full bg-white/5 rounded-[3rem] border border-white/10 relative overflow-hidden group">
-            {/* 1. A imagem local deve estar em: public/images/tijucas.png 
-               2. Usamos object-cover para preencher o quadrado sem distorcer.
-               3. Adicionei uma opacidade e um filtro de brilho (brightness) para o texto ficar legível.
-            */}
-            <img 
-              src="/images/tijucas.png" 
-              alt="Vista de Tijucas, Santa Catarina"
-              className="absolute inset-0 w-full h-full object-cover opacity-60 brightness-75 group-hover:opacity-80 group-hover:brightness-90 transition-all duration-700 group-hover:scale-105"
-            />
-            
-            {/* Overlay com as informações de texto por cima da imagem */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12 z-10 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-              <span className="material-symbols-outlined text-6xl text-blue-500 mb-4 animate-bounce drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">location_on</span>
-              <h3 className="text-3xl font-black mb-2 drop-shadow-lg">Tijucas / SC</h3>
-              <p className="text-white/80 text-lg font-medium drop-shadow-md">Brasil</p>
-              {/* Você pode adicionar o endereço específico aqui se tiver */}
-              {/* <p className="text-white/60 text-sm mt-4">Rua do Evento, 123 - Centro</p> */}
+          {/* --- CARD DA IMAGEM (Visual Moderno) --- */}
+          <div className="relative group">
+            <div className="aspect-square w-full bg-white/5 rounded-[3rem] border border-white/10 relative overflow-hidden shadow-2xl shadow-blue-900/10">
+              <img 
+                src="/images/tijucas.png" 
+                alt="Vista de Tijucas, Santa Catarina"
+                className="absolute inset-0 w-full h-full object-cover opacity-60 brightness-75 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
+              />
+              
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12 z-10 bg-gradient-to-t from-black via-transparent to-transparent">
+                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+                  <span className="material-symbols-outlined text-white text-3xl">location_on</span>
+                </div>
+                <h3 className="text-4xl font-black uppercase italic tracking-tighter mb-1">Tijucas / SC</h3>
+                <p className="text-white/60 text-sm font-black uppercase tracking-[3px]">Santa Catarina, Brasil</p>
+              </div>
             </div>
+            {/* Elemento decorativo atrás */}
+            <div className="absolute -z-10 -bottom-4 -right-4 w-full h-full border border-blue-600/20 rounded-[3rem]"></div>
           </div>
-          {/* ---------------------------------- */}
 
-          <div className="space-y-12">
+          {/* --- INFRAESTRUTURA & INFOS --- */}
+          <div className="space-y-12 py-4">
             <div>
-              <h3 className="text-2xl font-black tracking-tighter uppercase mb-6 text-blue-400">Infraestrutura & Acesso</h3>
-              <ul className="space-y-6">
-                <li className="flex items-start gap-4 text-white/70 leading-relaxed">
-                  <div className="p-2 bg-blue-600/10 rounded-lg mt-1">
-                    <span className="material-symbols-outlined text-blue-500 text-sm">flight_land</span>
+              <h3 className="text-2xl font-black tracking-tighter uppercase mb-8 italic text-blue-500">
+                Infraestrutura & Acesso
+              </h3>
+              
+              <ul className="space-y-8">
+                <li className="flex items-start gap-5">
+                  <div className="p-3 bg-white/5 border border-white/10 rounded-2xl">
+                    <span className="material-symbols-outlined text-blue-500">flight_land</span>
                   </div>
                   <div>
-                    <strong className="block text-white">Aeroportos Próximos</strong>
-                    Fácil acesso via Aeroporto de Florianópolis (FLN) ou Navegantes (NVT).
+                    <strong className="block text-white uppercase font-black italic tracking-tight text-lg leading-none mb-1">Aeroportos Próximos</strong>
+                    <span className="text-white/40 text-sm leading-relaxed">Fácil acesso via Aeroporto de Florianópolis (FLN) ou Navegantes (NVT).</span>
                   </div>
                 </li>
-                <li className="flex items-start gap-4 text-white/70 leading-relaxed">
-                  <div className="p-2 bg-blue-600/10 rounded-lg mt-1">
-                    <span className="material-symbols-outlined text-blue-500 text-sm">directions_car</span>
+
+                <li className="flex items-start gap-5">
+                  <div className="p-3 bg-white/5 border border-white/10 rounded-2xl">
+                    <span className="material-symbols-outlined text-blue-500">directions_car</span>
                   </div>
                   <div>
-                    <strong className="block text-white">Rodovia BR-101</strong>
-                    Localização estratégica com acesso duplicado pela principal rodovia do litoral.
+                    <strong className="block text-white uppercase font-black italic tracking-tight text-lg leading-none mb-1">Rodovia BR-101</strong>
+                    <span className="text-white/40 text-sm leading-relaxed">Localização estratégica com acesso duplicado pela principal rodovia do litoral.</span>
                   </div>
                 </li>
-                <li className="flex items-start gap-4 text-white/70 leading-relaxed">
-                  <div className="p-2 bg-blue-600/10 rounded-lg mt-1">
-                    <span className="material-symbols-outlined text-blue-500 text-sm">wifi_tethering</span>
+
+                <li className="flex items-start gap-5">
+                  <div className="p-3 bg-white/5 border border-white/10 rounded-2xl">
+                    <span className="material-symbols-outlined text-blue-500">wifi_tethering</span>
                   </div>
                   <div>
-                    <strong className="block text-white">Conectividade Total</strong>
-                    O centro de eventos conta com infraestrutura de rede de última geração.
+                    <strong className="block text-white uppercase font-black italic tracking-tight text-lg leading-none mb-1">Conectividade Total</strong>
+                    <span className="text-white/40 text-sm leading-relaxed">O centro de eventos conta com infraestrutura de rede de última geração.</span>
                   </div>
                 </li>
               </ul>
             </div>
 
-            <div className="p-8 bg-gradient-to-br from-blue-600 to-blue-800 rounded-[2rem] shadow-2xl shadow-blue-900/30 relative overflow-hidden">
-              <div className="absolute top-0 right-0 -mt-4 -mr-4 text-blue-500/20 text-9xl font-black z-0">SC</div>
-              <h4 className="text-xl font-black uppercase tracking-widest mb-4 relative z-10">Dica Local</h4>
-              <p className="text-sm leading-relaxed text-white/90 relative z-10">
-                Aproveite para conhecer a gastronomia local e as belas praias da região da Costa Esmeralda nos momentos livres do congresso.
-              </p>
+            {/* Dica Local (Estilo Glassmorphism) */}
+            <div className="p-8 bg-blue-600/5 border border-blue-600/20 rounded-[2.5rem] relative overflow-hidden group">
+              <div className="absolute top-0 right-0 -mt-8 -mr-8 text-blue-600/10 text-9xl font-black italic z-0 pointer-events-none">SC</div>
+              <div className="relative z-10">
+                <h4 className="text-lg font-black uppercase italic tracking-widest mb-3 text-blue-400">Dica Local</h4>
+                <p className="text-sm leading-relaxed text-white/60 font-medium">
+                  Aproveite para conhecer a gastronomia local e as belas praias da região da <span className="text-white">Costa Esmeralda</span> nos momentos livres do congresso.
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -8,7 +8,7 @@ export default function AdminNavigation({ user, isAdmin }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-dashboard-nav text-white shadow-md">
+    <nav className="bg-[#0a0a0a] border-b border-white/5 text-white shadow-md">
       <div className="px-4 py-4 flex justify-between items-center md:px-8">
         <span className="font-bold text-lg tracking-wide uppercase italic">
           {isAdmin ? "Painel do Gestor" : "Portal do Congressista"}
@@ -36,14 +36,14 @@ export default function AdminNavigation({ user, isAdmin }) {
               </>
             )}
             
-            {/* Link para o Pedro (Usuário comum) */}
             {!isAdmin && (
               <Link href="/area_usuario/minhas-palestras" className="hover:text-blue-400">Minha Agenda</Link>
             )}
           </div>
 
           <div className="flex items-center gap-4 border-l border-white/10 pl-6">
-            <span className="text-[10px] opacity-50 font-bold">{user.email}</span>
+            {/* O ?. garante que se o user for undefined, o código não quebra */}
+            <span className="text-[10px] opacity-50 font-bold">{user?.email}</span>
             <LogoutButton />
           </div>
         </div>

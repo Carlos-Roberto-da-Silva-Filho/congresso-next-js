@@ -1,6 +1,5 @@
 // /app/api/local-evento/route.js
 import { db } from "@/lib/firebaseAdmin";
-console.log(db);
 
 export async function GET() {
   const snap = await db.collection("local_evento").limit(1).get();

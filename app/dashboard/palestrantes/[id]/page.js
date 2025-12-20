@@ -12,7 +12,7 @@ async function fetchPalestranteById(id) {
 }
 
 export default async function EditPalestrante({ params }) {
-  const { id } = await params; // ✅ ISSO É O QUE FALTAVA
+  const { id } = await params; 
   const data = await fetchPalestranteById(id);
 
   return <PalestranteForm existingData={data} />;

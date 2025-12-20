@@ -15,7 +15,6 @@ async function fetchPalestraById(id) {
 }
 
 export default async function EditPalestra({ params }) {
-  // 🔥 AQUI ESTÁ A CORREÇÃO REAL
   const { id } = await params;
 
   const data = await fetchPalestraById(id);

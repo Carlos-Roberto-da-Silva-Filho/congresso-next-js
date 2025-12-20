@@ -4,27 +4,26 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    // 1. Usa o método seguro que descriptografa o cookie do Firebase
     const decodedClaims = await verifySession();
-
     if (!decodedClaims) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    // 2. O UID do Firebase Auth agora é a chave para buscar no Firestore
-    // Note: Certifique-se que o ID do documento no Firestore seja o mesmo UID do Auth
     const userDoc = await db.collection("usuarios").doc(decodedClaims.uid).get();
-
     if (!userDoc.exists) {
-      return NextResponse.json({ error: "Dados do usuário não encontrados" }, { status: 404 });
+      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    // 3. Busca palestras para a programação
     const palestrasSnap = await db.collection("palestras").get();
-    const palestras = palestrasSnap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const palestras = palestrasSnap.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        // Garante que o front sempre tenha o campo 'horario' vindo do 'dataHora'
+        horario: data.horario || (data.dataHora ? data.dataHora.split('T')[1].substring(0, 5) : "00:00")
+      };
+    });
 
     return NextResponse.json({ 
       user: { id: userDoc.id, ...userDoc.data() },
@@ -32,7 +31,6 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error("Erro na API /me:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
